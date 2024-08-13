@@ -53,8 +53,8 @@ def accelo_scrape(output_dir="./output", log_dir="./logs"):
         icon_url = item.find_element(By.XPATH, ".//img[@class='card__icon is--xxl']").get_attribute("src")
         name = item.find_element(By.XPATH, './/h2[@fs-cmsfilter-field="title"]').text
         long_description = item.find_element(By.XPATH, './/div[@fs-cmsfilter-field="desc"]').text
-        listing_url = item.find_element(By.TAG_NAME, "a").get_attribute("src")
-        result.append({
+        listing_url = item.find_element(By.TAG_NAME, "a").get_attribute("href")
+        row = {
             "Icon URL": icon_url,
             "Title": name,
             "Long Description": long_description,
@@ -62,7 +62,9 @@ def accelo_scrape(output_dir="./output", log_dir="./logs"):
             "ListingScrapeDate": today,
             "ListingRank": f"main-{rank}",
             "ListingSellerName": "",
-        })
+        }
+        logging.debug(row)
+        result.append(row)
         rank+=1
     utils.save_csv(result, os.path.join(output_dir, f"{website_name}{utils.today('%Y%m%d%H%M%S')}.csv"), columns)
 
