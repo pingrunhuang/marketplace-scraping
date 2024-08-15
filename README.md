@@ -1,0 +1,1 @@
+https://getstarstruck.notion.site/SCRAPERS-GUIDE-155d5be351d84d829890acb54e6f3325

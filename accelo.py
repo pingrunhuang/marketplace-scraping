@@ -7,12 +7,14 @@ from selenium.webdriver import Chrome
 import os
 import time
 import datetime
-import utils
+import csv
+from xlsxwriter import Workbook
 
 columns = [
     "Icon URL",
     "Title",
     "Long Description",
+    "ListingName",
     "Listing URL",
     "ListingScrapeDate",
     "ListingRank",
@@ -23,6 +25,26 @@ url_prefix = ""
 website_name = "Accelo"
 WAIT_TIME = 2
 HEADLESS_MODE = True
+
+
+def save_csv(data, filepath, columns):
+    with open(filepath, "w", newline="") as csvfile:
+        writer = csv.DictWriter(csvfile, fieldnames=columns)
+        writer.writeheader()
+        writer.writerows(data)
+
+def save_excel(data, filepath, columns):
+    with Workbook(filepath) as workbook:
+        worksheet = workbook.add_worksheet()
+        worksheet.write_row(row=0, col=0, data=columns)
+        for index, item in enumerate(data):
+            row = map(lambda x: item.get(x, ""), columns)
+            worksheet.write_row(row=index + 1, col=0, data=row)
+
+
+def today(fmt:str="%Y-%m-%d")->str:
+    dt = datetime.datetime.now()
+    return dt.strftime(fmt)
 
 
 def accelo_scrape(output_dir="./output", log_dir="./logs"):
@@ -41,7 +63,7 @@ def accelo_scrape(output_dir="./output", log_dir="./logs"):
     webdriver_service = Service('D:\\chromedriver-win64\\chromedriver.exe') # replace with your chromedriver
     chrome_options = Options()
     chrome_options.add_argument("--headless")
-    today = utils.today()
+    dt = today()
 
     driver = Chrome(service=webdriver_service, options=chrome_options)
     driver.get(web_url)
@@ -58,15 +80,16 @@ def accelo_scrape(output_dir="./output", log_dir="./logs"):
             "Icon URL": icon_url,
             "Title": name,
             "Long Description": long_description,
+            "ListingName": name,
             "Listing URL": web_url+str(listing_url),
-            "ListingScrapeDate": today,
+            "ListingScrapeDate": dt,
             "ListingRank": f"main-{rank}",
             "ListingSellerName": "",
         }
         logging.debug(row)
         result.append(row)
         rank+=1
-    utils.save_csv(result, os.path.join(output_dir, f"{website_name}{utils.today('%Y%m%d%H%M%S')}.csv"), columns)
+    save_excel(result, os.path.join(output_dir, f"{website_name}{today('%Y%m%d%H%M%S')}.xlsx"), columns)
 
 if __name__ == "__main__":
     '''
